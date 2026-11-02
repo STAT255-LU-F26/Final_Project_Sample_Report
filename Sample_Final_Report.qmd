@@ -1,0 +1,189 @@
+---
+title: "Predicting Mercury Contamination in Florida Lakes from pH and Location"
+author: "Sample Report from Claude"
+format: pdf
+editor: source
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(ggResidpanel)
+library(gridExtra)
+library(knitr)
+select <- dplyr::select
+```
+
+```{r}
+# read in the training data (50 lakes) and the new lakes (3 lakes) to predict
+FloridaLakes <- read_csv("FloridaLakes_Train.csv")
+FloridaLakes_New <- read_csv("FloridaLakes_New.csv")
+```
+
+## Introduction
+
+Mercury is a toxic metal that accumulates in fish, and high levels in lakes can pose health risks to people who eat the fish they catch as well as to wildlife. Environmental agencies have limited resources, so it is useful to predict which lakes are likely to have high mercury levels in order to decide which ones to monitor most closely. In this report, we analyze data on 50 Florida lakes, including the average mercury level found in fish from each lake (in parts per million, ppm), the acidity (pH) of the lake water, the chlorophyll concentration, the depth category of the lake, and whether the lake is in the northern or southern part of the state. We use these data to build a statistical model for mercury level, and then use the model to predict mercury levels, with prediction intervals, for three additional lakes (Tohopekaliga, Wildcat, and Yale) whose mercury levels have not been measured, in order to recommend how they should be prioritized for monitoring.
+
+## Data
+
+```{r}
+#| label: tbl-summary
+#| tbl-cap: "Summary statistics for mercury level and pH, by location"
+
+# summarize mercury and pH for northern and southern lakes
+FloridaLakes %>%
+  group_by(Location) %>%
+  summarize(N = n(),
+            Mean_Mercury = mean(Mercury),
+            SD_Mercury = sd(Mercury),
+            Mean_pH = mean(pH),
+            SD_pH = sd(pH)) %>%
+  kable(digits = 2)
+```
+
+```{r}
+#| label: fig-hist
+#| fig-cap: "Distribution of mercury levels in 50 Florida lakes"
+#| fig-height: 3
+
+# histogram of the response variable
+ggplot(data = FloridaLakes, aes(x = Mercury)) +
+  geom_histogram(color = "white", fill = "steelblue", bins = 12) +
+  xlab("Mercury Level (ppm)") + ylab("Number of Lakes") +
+  ggtitle("Mercury Levels in Florida Lakes")
+```
+
+```{r}
+#| label: fig-box
+#| fig-cap: "Mercury levels in northern and southern Florida lakes"
+#| fig-height: 3
+
+# boxplots comparing mercury levels in the two regions
+ggplot(data = FloridaLakes, aes(x = Location, y = Mercury, fill = Location)) +
+  geom_boxplot(alpha = 0.6) +
+  xlab("Location") + ylab("Mercury Level (ppm)") +
+  ggtitle("Mercury Level by Location") +
+  theme(legend.position = "none")
+```
+
+```{r}
+#| label: fig-scatter
+#| fig-cap: "Relationship between pH and mercury level, by location"
+#| fig-height: 3.5
+
+# scatterplot of mercury vs pH, colored by location, with separate trend lines
+ggplot(data = FloridaLakes, aes(x = pH, y = Mercury, color = Location)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  xlab("pH") + ylab("Mercury Level (ppm)") +
+  ggtitle("Mercury Level and pH")
+```
+
+```{r}
+#| label: fig-chlor
+#| fig-cap: "Relationship between chlorophyll and mercury level"
+#| fig-height: 3.5
+
+# chlorophyll is heavily right-skewed, so plot it on a log scale
+ggplot(data = FloridaLakes, aes(x = Chlorophyll, y = Mercury)) +
+  geom_point() +
+  scale_x_log10() +
+  xlab("Chlorophyll (mg/L, log scale)") + ylab("Mercury Level (ppm)") +
+  ggtitle("Mercury Level and Chlorophyll")
+```
+
+```{r}
+#| label: fig-depth
+#| fig-cap: "Relationship between depth and mercury level"
+#| fig-height: 3.5
+
+ggplot(data = FloridaLakes, aes(x = Depth, y = Mercury, fill=Depth)) +
+  geom_boxplot() +
+  xlab("Depth") + ylab("Mercury Level (ppm)") +
+  ggtitle("Mercury Level and Depth")
+```
+
+@tbl-summary gives summary statistics for mercury level and pH in northern and southern lakes. Of the 50 lakes, 31 are in the north and 19 are in the south. Southern lakes have higher mercury levels on average (about 0.70 ppm, compared to 0.44 ppm in the north), while the average pH is similar in the two regions (about 6.5 to 6.6). @fig-hist shows that mercury levels are right-skewed, with most lakes below 1 ppm and six lakes above 1 ppm. @fig-box shows that the typical southern lake has a noticeably higher mercury level than the typical northern lake, and mercury levels are also more variable in the south.
+
+@fig-scatter shows a clear negative relationship between pH and mercury level, with more acidic lakes tending to have higher mercury levels. The relationship appears steeper, and tighter, for southern lakes than for northern lakes, which suggests that the effect of pH may differ by location. @fig-chlor shows that lakes with more chlorophyll tend to have lower mercury levels, but chlorophyll is also strongly related to pH, so it is unclear from this plot alone whether it adds information beyond pH.  @fig-depth Shows that mercury levels tend to be slightly lower in shallower lakes than medium or deep ones, but the differences are small, suggesting that mercury levels are not strongly related to depth.  
+
+Overall, these figures suggest that pH and location are both useful for explaining mercury levels, and that an interaction between them is worth investigating.
+
+## Model
+
+We model mercury level (in ppm) using pH, location (north or south), depth, and chlorophyll as explanatory variables. We include an interaction term between location and pH, which allows the slope of the pH relationship to differ between northern and southern lakes, as we see in Figure @fig-scatter. 
+
+@tbl-model displays the model summary output. 
+
+```{r}
+#| label: tbl-model
+#| tbl-cap: "Estimated model coefficients"
+
+# fit the final model and store predicted values for plotting
+M <- lm(data = FloridaLakes, Mercury ~ pH * Location + Chlorophyll + Depth)
+summary(M)
+```
+
+
+@tbl-confint displays confidence intervals for each of the model parameters. 
+
+
+
+```{r}
+#| label: tbl-confint
+#| tbl-cap: "Confidence intervals for model"
+
+confint(M)
+```
+
+The intercept does not have a sensible interpretation. The pH coefficient of -0.05 tells us that for each one unit increase in pH, average mercury level in northern lakes is expected to decrease by 0.05 ppm, assuming chlorophyll and depth are held constant. We are 95% confident that this change could be anywhere between a 0.14 ppm decrease and a 0.04 ppm increase. The interaction term tells us that Mercury levels in southern lakes are expected to decrease by -0.14 ppm more per unit increase in pH than Northern lakes, meaning that for each one unit increase in pH, average mercury level in southern lakes is expected to decrease by 0.19 ppm, with a 95% confidence interval ranging from 0.25 ppm to 0.03 ppm less, again assuming chlorophyll and depth are held constant. The confidence interval does not contain 0, which is consistent with the low p-value associated with the interaction term, providing a statistically discernible difference in the effect of pH on mercury levels for southern lakes, compared to northern ones. Thus, lakes with higher pH, which are less acidic, are expected to have lower mercury levels than more acidic lakes which have lower pH. It does not make sense to interpret the p-values associated with pH or location individually, since we included the interaction term in the model. 
+
+The chlorophyll estimate is 0.002, meaning that for each one unit increase in chlorophyll, mercury is expected to increase by 0.002 ppm, assuming pH, location, and depth are held constant. A ten unit increase in chlorophyll is associated with an expected increase in mercury of 0.02, which is still a tiny change. The p-value of 0.06 is fairly small, suggesting that the difference is unlikely to occur by chance, but given the size of the estimated change, it is not practically meaningful. 
+
+Mercury levels are estimated to be 0.03 ppm higher in medium deeps than deep ones, and 0.04 ppm less in shallow lakes than deep ones, however these differences are small and with large p-values, they are not statistically discernible. 
+
+The model has $R^2$ = 0.58 meaning that approximately 58% of the variability in mercury levels among these lakes is explained by pH, location, depth, chlorophyll, and their interaction. 
+
+## Model Assumptions
+
+```{r}
+#| label: fig-resid
+#| fig-cap: "Residual plot, normal QQ plot, index plot, and histogram of residuals for the final model"
+#| fig-height: 5
+
+# residual plot, QQ plot, index plot, and histogram of residuals
+resid_panel(M)
+```
+
+
+@fig-resid shows the residuals plotted against predicted values, a normal QQ plot, an index plot, and a histogram. The residual plot shows no clear curvature, so the linearity assumption appears reasonable, and the spread of the residuals is roughly constant across the range of predicted values. @fig-resid-loc shows that the residual spread is also similar in northern and southern lakes, which supports the constant variance assumption. The main concern is normality: the QQ plot and histogram show a heavier right tail than expected, driven mostly by a few lakes. The index plot shows no trend, but we cannot rule out other forms of dependence: lakes that are close together geographically may share similar water chemistry or mercury sources, which would violate the independence assumption, and we have no location data finer than north or south to check this. A violation of normality has a limited effect on the coefficient estimates, and with 50 lakes the confidence intervals and p-values should be approximately valid, but the right skew means prediction intervals based on a normal distribution may be somewhat too narrow on the high side and too wide on the low side, which matters because we are most interested in lakes with high mercury. 
+
+## Predictions
+
+Next, we'll make predictions on the three new lakes. 
+
+```{r}
+#| label: tbl-newlakes
+#| tbl-cap: "New lakes we predict"
+
+FloridaLakes_New |> select(ID, Lake, pH, Chlorophyll, Location, Depth)
+```
+
+```{r}
+#| label: tbl-pred
+#| tbl-cap: "Predicted mercury levels (ppm) for the three new lakes, with 95% confidence intervals for the mean and 95% prediction intervals for an individual lake"
+
+#  prediction intervals for the mercury level of each of these specific lakes
+predict(M, newdata = FloridaLakes_New, interval = "prediction")
+```
+
+@tbl-pred shows the predictions for our three new lakes. The pH values of all three new lakes fall within the range of pH values observed for lakes in the same region in our data, so these predictions are interpolations rather than extrapolations. We predict a mercury level of about 0.78 ppm for Tohopekaliga Lake, 0.58 ppm for Wildcat Lake, and 0.46 ppm for Yale Lake. We are 95% confident that the mercury level in Tohopekaliga Lake is between 0.27 and 1.29 ppm, in Wildcat Lake between 0.08 and 1.09 ppm, and in Yale Lake between about 0 and 0.99 ppm (the model's lower limit for Yale is slightly below 0, which is not possible for a mercury level, so we treat it as 0). The prediction intervals are wide, about 1 ppm from lower to upper limit, because individual lakes vary a lot around the model's average even when the average itself is estimated fairly precisely.
+
+## Recommendation
+
+We recommend prioritizing monitoring of Tohopekaliga Lake first, followed by Wildcat Lake, with Yale Lake as the lowest priority. Tohopekaliga has the highest predicted mercury level (about 0.78 ppm) and is a southern lake with a fairly acidic pH of 6.2, the situation in which our model shows mercury to be most elevated and most sensitive to pH. Its prediction interval extends up to about 1.29 ppm, so it plausibly exceeds 1 ppm, a level above which mercury in fish is often considered a concern. Wildcat Lake is the second priority: it is a northern lake, but its low pH of 5.2 gives it a predicted mercury level of about 0.58 ppm, and its interval also reaches above 1 ppm. Yale Lake has a high pH (7.9) and the lowest predicted mercury level (about 0.31 ppm), so it is the least likely of the three to be a problem. These recommendations should be treated as a way to prioritize measurement, not as a replacement for it: the model explains only about half of the variability in mercury levels. We noticed some right-skewness in the residual plot, which could cause the prediction intervals to be unreliable. In particular, it is possible that they should have higher upper bounds. Other information not in our model, such as nearby industrial or agricultural sources, how heavily each lake is fished, and how many people eat fish from it, should also be considered, and could reasonably move a lake like Yale up the priority list if it is heavily used for fishing. Finally, because this is an observational study, the association between low pH and high mercury should be used for prediction and prioritization, and not as evidence that adjusting a lake's pH would reduce its mercury levels.
+
+
+## AI Use
+
+Claude was used to generate an initial draft of this sample report. The initial report did not include chlorophyll or depth in the model. Although these do not show strong relationships with mercury, they are still worth reporting on, as the lack of a strong relationship is an interesting finding itself. Thus, these were added to the model. Claude used a number of techniques we haven't studied, like adjusted-$R^2$, AIC, and cross-validation. These are unnecessary here, so discussion of them was removed from the report. The interpretations section under the model output was rewritten entirely by hand, as Claude's interpretations were vague and unclear. Claude added unnecessary residual plots that we haven't studied, such as a leverage plot, so it was removed from the final report. Wording was changed in all sections of the report to make the report more clear and concise. 

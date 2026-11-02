@@ -1,0 +1,51 @@
+ID,Lake,pH,Mercury,Chlorophyll,Location,Depth
+1,Alligator,6.1,1.23,0.7,S,Medium
+2,Annie,5.1,1.33,3.2,S,Deep
+3,Apopka,9.1,0.04,128.3,N,Medium
+4,Blue Cypress,6.9,0.44,3.5,S,Shallow
+5,Brick,4.6,1.2,1.8,S,Medium
+6,Bryant,7.3,0.27,44.1,N,Shallow
+7,Cherry,5.4,0.48,3.4,N,Shallow
+8,Crescent,8.1,0.19,33.7,N,Shallow
+9,Deer Point,5.8,0.83,1.6,N,Medium
+10,Dias,6.4,0.81,22.5,N,Deep
+11,Dorr,5.4,0.71,14.9,N,Medium
+12,Down,7.2,0.5,4,S,Deep
+13,Eaton,7.2,0.49,11.6,N,Shallow
+14,East Tohopekaliga,5.8,1.16,5.8,S,Medium
+15,Farm-13,7.6,0.05,71.1,N,Shallow
+16,George,8.2,0.15,78.6,N,Shallow
+17,Griffin,8.7,0.19,80.1,N,Medium
+18,Harney,7.8,0.77,13.9,N,Shallow
+19,Hart,5.8,1.08,4.6,S,Medium
+20,Hatchineha,6.7,0.98,17,S,Shallow
+21,Iamonia,4.4,0.63,9.6,N,Deep
+22,Istokpoga,6.7,0.56,9.5,S,Shallow
+23,Jackson,6.1,0.41,21,N,Deep
+24,Josephine,6.9,0.73,32.1,S,Shallow
+25,Kingsley,5.5,0.34,1.6,N,Deep
+26,Kissimmee,6.9,0.59,21.5,S,Shallow
+27,Lochloosa,7.3,0.34,24.7,N,Shallow
+28,Louisa,4.5,0.84,7,S,Medium
+29,Miccasukee,4.8,0.5,14.8,N,Medium
+30,Minneola,5.8,0.34,0.7,N,Medium
+31,Monroe,7.8,0.28,43.8,N,Medium
+32,Newmans,7.4,0.34,32.7,N,Shallow
+33,Ocean Pond,3.6,0.87,3.2,N,Deep
+34,Ocheese Pond,4.4,0.56,3.2,N,Deep
+35,Okeechobee,7.9,0.17,16.1,S,Shallow
+36,Orange,7.1,0.18,45.2,N,Shallow
+37,Panasoffkee,6.8,0.19,16.5,N,Shallow
+38,Parker,8.4,0.04,152.4,S,Medium
+39,Placid,7,0.49,12.8,S,Deep
+40,Puzzle,7.5,1.1,20.1,N,Shallow
+41,Rodman,7,0.16,6.4,N,Deep
+42,Rousseau,6.8,0.1,6.2,N,Medium
+43,Sampson,5.9,0.48,1.6,N,Deep
+44,Shipp,8.3,0.21,68.2,S,Shallow
+45,Talquin,6.7,0.86,24.1,N,Deep
+46,Tarpon,6.2,0.52,9.6,S,Shallow
+47,Trafford,8.9,0.27,9.6,S,Shallow
+48,Trout,4.3,0.94,6.4,S,Deep
+49,Tsala Apopka,7,0.4,4.6,N,Shallow
+50,Weir,6.9,0.43,16.5,N,Deep
