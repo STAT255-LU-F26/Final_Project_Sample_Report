@@ -1,6 +1,6 @@
 ---
 title: "Predicting Mercury Contamination in Florida Lakes from pH and Location"
-author: "Sample Report from Claude"
+author: "Sample Report"
 format: pdf
 editor: source
 ---
@@ -156,7 +156,7 @@ resid_panel(M)
 ```
 
 
-@fig-resid shows the residuals plotted against predicted values, a normal QQ plot, an index plot, and a histogram. The residual plot shows no clear curvature, so the linearity assumption appears reasonable, and the spread of the residuals is roughly constant across the range of predicted values. @fig-resid-loc shows that the residual spread is also similar in northern and southern lakes, which supports the constant variance assumption. The main concern is normality: the QQ plot and histogram show a heavier right tail than expected, driven mostly by a few lakes. The index plot shows no trend, but we cannot rule out other forms of dependence: lakes that are close together geographically may share similar water chemistry or mercury sources, which would violate the independence assumption, and we have no location data finer than north or south to check this. A violation of normality has a limited effect on the coefficient estimates, and with 50 lakes the confidence intervals and p-values should be approximately valid, but the right skew means prediction intervals based on a normal distribution may be somewhat too narrow on the high side and too wide on the low side, which matters because we are most interested in lakes with high mercury. 
+@fig-resid shows the residuals plotted against predicted values, a normal QQ plot, an index plot, and a histogram. The residual plot shows no clear curvature, so the linearity assumption appears reasonable, and the spread of the residuals is roughly constant across the range of predicted values. @fig-resid shows that the residual spread is also similar in northern and southern lakes, which supports the constant variance assumption. The main concern is normality: the QQ plot and histogram show a heavier right tail than expected, driven mostly by a few lakes. The index plot shows no trend, but we cannot rule out other forms of dependence: lakes that are close together geographically may share similar water chemistry or mercury sources, which would violate the independence assumption, and we have no location data finer than north or south to check this. A violation of normality has a limited effect on the coefficient estimates, and with 50 lakes the confidence intervals and p-values should be approximately valid, but the right skew means prediction intervals based on a normal distribution may be somewhat too narrow on the high side and too wide on the low side, which matters because we are most interested in lakes with high mercury. 
 
 ## Predictions
 
